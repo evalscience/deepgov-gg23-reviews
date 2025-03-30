@@ -68,9 +68,12 @@ export const openaiTask = task({
     const researchNetwork = mastra.getNetwork("Research_Network");
     if (!researchNetwork) return null;
 
-    await researchNetwork.generate(payload.prompt, {
-      maxSteps: 20, // Allow enough steps for the LLM router to determine the best agents to use
-    });
+    await researchNetwork.generate(
+      `Research this project. Follow links to learn more about it. ${payload.application}`,
+      {
+        maxSteps: 20, // Allow enough steps for the LLM router to determine the best agents to use
+      }
+    );
 
     const research = researchNetwork.getAgentInteractionHistory();
 

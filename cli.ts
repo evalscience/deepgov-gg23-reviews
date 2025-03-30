@@ -363,14 +363,6 @@ const pretium = `{
     }
   ]
 }`;
-const prompt = `
-    Research this project. Follow links to learn more about it. 
-     
-    \`\`\`json
-    ${gainForest}
-    \`\`\`
-        `;
 tasks.trigger("openai-task", {
-  prompt: prompt,
   application: gainForest,
 });
