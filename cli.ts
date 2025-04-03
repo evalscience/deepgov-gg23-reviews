@@ -363,6 +363,7 @@ const pretium = `{
     }
   ]
 }`;
+
 tasks.trigger("openai-task", {
-  application: gainForest,
+  application: goodDollar,
 });

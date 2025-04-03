@@ -1,22 +1,18 @@
 import { mastra } from "@/mastra";
-import { researchNetwork } from "@/mastra/network";
 import {
   createApplication,
-  createProject,
   createResearch,
   createReview,
   getApplication,
-  getOrCreateProjectBySlug,
+  getResearch,
 } from "@/supabase/actions";
 import { task } from "@trigger.dev/sdk/v3";
 import { z } from "zod";
-import {
-  missionAlignmentAgent,
-  technicalInnovationAndFeasibilityAgent,
-  communityBenefitAndEthicalImpactAgent,
-} from "@/mastra/agents/evaluators";
 
 import crypto from "crypto";
+import { createAgents, fetchModelSpecs } from "@/mastra/agents/evaluators";
+import { createEvaluationPrompt } from "@/mastra/agents/evaluators/prompts";
+import { evaluationAgent } from "@/mastra/agents";
 export const openaiTask = task({
   id: "openai-task",
   // retry: {
@@ -28,6 +24,7 @@ export const openaiTask = task({
   // },
   run: async (payload: { prompt: string; application: string }) => {
     //if this fails, it will throw an error and retry
+
     console.log("Running Trigger.dev task", payload);
 
     const { object } = await mastra
@@ -48,7 +45,7 @@ export const openaiTask = task({
       .update(payload.application)
       .digest("hex");
 
-    console.log(hash);
+    console.log("Loading application...", hash);
     let application = await getApplication(hash);
 
     console.log(application);
@@ -68,43 +65,47 @@ export const openaiTask = task({
     const researchNetwork = mastra.getNetwork("Research_Network");
     if (!researchNetwork) return null;
 
-    await researchNetwork.generate(
-      `Research this project. Follow links to learn more about it. ${payload.application}`,
-      {
-        maxSteps: 20, // Allow enough steps for the LLM router to determine the best agents to use
-      }
-    );
+    console.log("Loading previous research...", application.id);
+    let research = await getResearch(application.id);
+    console.log(research);
+    if (!research) {
+      console.log(
+        "No existing research found, perform deep research on project:",
+        application.name
+      );
+      await researchNetwork.generate(
+        `Research this project. Follow links to learn more about it. ${payload.application}`,
+        {
+          maxSteps: 20, // Allow enough steps for the LLM router to determine the best agents to use
+        }
+      );
 
-    const research = researchNetwork.getAgentInteractionHistory();
+      research = researchNetwork.getAgentInteractionHistory();
+      await createResearch({
+        application_id: application.id,
+        content: research,
+      });
+    }
 
-    await createResearch({
-      application_id: application.id,
-      content: research,
-    });
-
-    const agents = [
-      missionAlignmentAgent,
-      technicalInnovationAndFeasibilityAgent,
-      communityBenefitAndEthicalImpactAgent,
-    ] as const;
-
+    const modelSpecs = await fetchModelSpecs();
+    console.log("Reviwing application with:", modelSpecs);
     await Promise.all(
-      agents.map(async (name) => {
-        const result = await name.generate(
-          `Evaluate the following application and write a final report on the topic using the learnings from research. Make it as as detailed as possible, aim for 3 or more pages (max 10 pages), include ALL the learnings from research.
-          ${payload.application}            
-                  
-          Research:
-          ${research}
-`,
-          { output: ReviewSchema }
+      Object.values(modelSpecs).map(async (agent) => {
+        const prompt = createEvaluationPrompt(
+          payload.application,
+          JSON.stringify(research),
+          agent
         );
-
+        console.log("Reviewing application with agent:", agent.name);
+        const result = await evaluationAgent.generate(prompt, {
+          output: ReviewSchema,
+        });
+        console.log(result.object);
         await createReview({
           application_id: application.id,
           score: result.object.score,
           content: result.object,
-          reviewer: name.name,
+          reviewer: agent.name,
         });
       })
     );
@@ -112,7 +113,6 @@ export const openaiTask = task({
     return { success: true };
   },
 });
-
 const ReviewSchema = z.object({
   summary: z.string(),
   review: z
@@ -126,7 +126,7 @@ const ReviewSchema = z.object({
         title: z.string(),
         description: z
           .string()
-          .describe("A description of the strength with citations"),
+          .describe("A description of the application strengths"),
       })
     )
     .min(1)
@@ -137,7 +137,7 @@ const ReviewSchema = z.object({
         title: z.string(),
         description: z
           .string()
-          .describe("A description of the weakness with citations"),
+          .describe("A description of the application weaknesses"),
       })
     )
     .min(1)
@@ -148,11 +148,13 @@ const ReviewSchema = z.object({
         title: z.string(),
         description: z
           .string()
-          .describe("A description of the requested change with citations"),
+          .describe(
+            "A description of the requested changes to the application"
+          ),
       })
     )
     .min(1)
     .max(5)
     .describe("Requested changes"),
-  score: z.number().min(0).max(100).describe("Rate this from 0 to 100."),
+  score: z.number().min(0).max(100),
 });

@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, CheckCircle2, LightbulbIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { listReviews } from "@/supabase/actions";
+import Image from "next/image";
 
 export function AgentReviewTabs({ applicationId }: { applicationId: string }) {
   const {
@@ -76,6 +77,7 @@ export function AgentReviewTabs({ applicationId }: { applicationId: string }) {
 }
 
 function ReviewContent({ review }: { review: any }) {
+  const imageSrc = `https://raw.githubusercontent.com/evalscience/deepgov-gg23/refs/heads/main/agents/${review.reviewer}/visuals/profile.png`;
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center gap-6">
@@ -84,6 +86,12 @@ function ReviewContent({ review }: { review: any }) {
             <AvatarFallback className="text-xl">
               {review.reviewer.charAt(0).toUpperCase()}
             </AvatarFallback>
+            <Image
+              src={imageSrc}
+              alt={review.reviewer}
+              width={100}
+              height={100}
+            />
           </Avatar>
           <div>
             <h3 className="text-xl font-bold">{review.reviewer}</h3>

@@ -35,7 +35,7 @@ export const webSearchAgent = new Agent({
   instructions: `
     You are a web search specialist. Your job is to:
     1. Find the most relevant and up-to-date information online for a given query
-    2. Evaluate the credibility of sources and prioritize reliable information
+    2. Evaluate the credibility of sources and prioritize reliable information.
     3. Extract key facts and data points from web content
     4. Provide direct quotes and citations when appropriate
     5. Summarize findings in a clear, concise manner

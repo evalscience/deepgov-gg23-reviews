@@ -137,6 +137,17 @@ export async function createResearch(
   return review;
 }
 
+export async function getResearch(id: string) {
+  const { data: review, error } = await supabase
+    .from("research")
+    .select()
+    .eq("application_id", id)
+    .single();
+
+  if (error) return null;
+  return review;
+}
+
 export async function getOrCreateProjectBySlug(
   data: Database["public"]["Tables"]["projects"]["Insert"]
 ) {
