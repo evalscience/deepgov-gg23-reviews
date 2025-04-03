@@ -1,35 +1,24 @@
 export const createEvaluationPrompt = (
   application: string,
   research: string,
-  agent: { constitution: string; style: string }
+  agent: { spec: string; style: string }
 ) => `
 
-**Please analyze the following inputs:**
+Evaluate the following grant application based on the provided model specification.
 
-1. **Grant Application:**
-   ${application}
+Review the application and use the research information as a reference to provide a fair and objective evaluation.
 
-2. **Research Information:**
-   ${research}
+Please analyze the following:
 
-3. **Model Specification:**
-   ${agent.constitution}
+1. **Grant Application:**  
+${application}
 
-4. **Style:**
-   ${agent.style}
+2. **Research Information:**  
+${research}
 
-**Output:**
-1. **Summary of the Application:** A brief overview of the project and its main objectives.
-2. **Review:** A detailed review of the application with motivations and citations from the research.
-3. **Strengths:** A list (between 1 and 5 items) of identified strengths, each with a title and description.
-4. **Weaknesses:** A list (between 1 and 5 items) of identified weaknesses, each with a title and description.
-5. **Requested Changes:** A list (between 1 and 5 items) of recommended changes or improvements, each with a title and description.
-6. **Overall Score:** A final score between 0 and 100.
+**Model Specification:**  
+${agent.spec}
 
-**Final Steps:**
-- Summarize your evaluation clearly, linking the evidence from the application and research to your scores.
-- Provide a final recommendation (e.g., "Highly Recommend Funding", "Recommend with Revisions", or "Do Not Recommend Funding") within your review.
-
-Your output should be clear, structured, and fully compliant with the provided schema. This ensures transparency in your evaluation and facilitates further analysis of the review process.
-
+Reply in the style of:
+${agent.style}
 `;
