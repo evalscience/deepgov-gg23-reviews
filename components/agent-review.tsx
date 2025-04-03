@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useState } from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -86,7 +86,7 @@ function ReviewContent({ review }: { review: any }) {
             <AvatarFallback className="text-xl">
               {review.reviewer.charAt(0).toUpperCase()}
             </AvatarFallback>
-            <Image
+            <AvatarImage
               src={imageSrc}
               alt={review.reviewer}
               width={100}
