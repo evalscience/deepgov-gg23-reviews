@@ -1,5 +1,7 @@
 import type { ComponentProps } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 import { cn } from "@/lib/utils";
 
 const components = {
@@ -24,7 +26,11 @@ export function Markdown({
 }: ComponentProps<typeof ReactMarkdown>) {
   return (
     <div className="prose prose-sm max-w-full">
-      <ReactMarkdown {...props} components={components} />
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        {...props}
+        components={components}
+      />
     </div>
   );
 }
