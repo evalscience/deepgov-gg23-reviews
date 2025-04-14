@@ -1,8 +1,7 @@
+import { cn } from "@/lib/utils";
 import type { ComponentProps } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-
-import { cn } from "@/lib/utils";
 
 const components = {
   a: ({ children, href, ...props }: ComponentProps<"a">) => {
@@ -21,11 +20,11 @@ const components = {
 };
 
 export function Markdown({
-  // className = "",
+  className = "",
   ...props
-}: ComponentProps<typeof ReactMarkdown>) {
+}: ComponentProps<typeof ReactMarkdown> & { className?: string }) {
   return (
-    <div className="prose prose-sm max-w-full">
+    <div className={cn("prose max-w-full", className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         {...props}

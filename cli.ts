@@ -1,5 +1,6 @@
 import { tasks } from "@trigger.dev/sdk/v3";
 
+import applications from "./data/applications.json";
 const gainForest = `
 {
   "name": "GainForest",
@@ -364,6 +365,8 @@ const pretium = `{
   ]
 }`;
 
-tasks.trigger("openai-task", {
-  application: goodDollar,
+applications.slice(10, 2000).forEach((application) => {
+  tasks.trigger("openai-task", {
+    application,
+  });
 });

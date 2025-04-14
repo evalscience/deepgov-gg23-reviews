@@ -4,6 +4,7 @@ export type Application = {
   name: string;
   description: string;
   website: string;
+  applicationsCount: number;
   content: string; // json
   created_at: string;
   updated_at: string;

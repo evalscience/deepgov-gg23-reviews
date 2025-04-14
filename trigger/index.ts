@@ -13,23 +13,31 @@ import crypto from "crypto";
 import { createAgents, fetchModelSpecs } from "@/mastra/agents/evaluators";
 import { createEvaluationPrompt } from "@/mastra/agents/evaluators/prompts";
 import { evaluationAgent } from "@/mastra/agents";
+import { ReviewSchema } from "@/schemas/review";
 export const openaiTask = task({
   id: "openai-task",
+  queue: {
+    concurrencyLimit: 1,
+  },
   // retry: {
   //   maxAttempts: 10,
   //   factor: 1.8,
   //   minTimeoutInMs: 500,
   //   maxTimeoutInMs: 90_000,
-  //   randomize: false,
+  //   randomize: true,
   // },
   run: async (payload: { prompt: string; application: string }) => {
     //if this fails, it will throw an error and retry
 
-    console.log("Running Trigger.dev task", payload);
+    console.log(
+      "Running Trigger.dev task",
+      JSON.stringify(payload.application, null, 2)
+    );
 
+    const applicationData = JSON.stringify(payload.application);
     const { object } = await mastra
       .getAgent("extractorAgent")
-      .generate(`Extract project details from: ${payload.application}`, {
+      .generate(`Extract project details from: ${applicationData}`, {
         output: z.object({
           name: z.string(),
           description: z.string(),
@@ -42,7 +50,7 @@ export const openaiTask = task({
     // Hash the application content
     const hash = crypto
       .createHash("sha256")
-      .update(payload.application)
+      .update(applicationData)
       .digest("hex");
 
     console.log("Loading application...", hash);
@@ -53,7 +61,7 @@ export const openaiTask = task({
       const { text: content } = await mastra
         .getAgent("extractorAgent")
         .generate(
-          `Extract application details as markdown from: ${payload.application}`,
+          `Extract application details as markdown from: ${applicationData}. Skip the markdown tags (\`\`\`markdown).`,
           {}
         );
 
@@ -74,7 +82,7 @@ export const openaiTask = task({
         application.name
       );
       await researchNetwork.generate(
-        `Research this project. Follow links to learn more about it. ${payload.application}`,
+        `Research this project. Follow links to learn more about it. ${applicationData}`,
         {
           maxSteps: 20, // Allow enough steps for the LLM router to determine the best agents to use
         }
@@ -92,7 +100,7 @@ export const openaiTask = task({
     await Promise.all(
       Object.values(modelSpecs).map(async (agent) => {
         const prompt = createEvaluationPrompt(
-          payload.application,
+          applicationData,
           JSON.stringify(research),
           agent
         );
@@ -112,49 +120,4 @@ export const openaiTask = task({
 
     return { success: true };
   },
-});
-const ReviewSchema = z.object({
-  summary: z.string(),
-  review: z
-    .string()
-    .describe(
-      "A review of the application with motivation and citations from the research"
-    ),
-  strengths: z
-    .array(
-      z.object({
-        title: z.string(),
-        description: z
-          .string()
-          .describe("A description of the application strengths"),
-      })
-    )
-    .min(1)
-    .max(5),
-  weaknesses: z
-    .array(
-      z.object({
-        title: z.string(),
-        description: z
-          .string()
-          .describe("A description of the application weaknesses"),
-      })
-    )
-    .min(1)
-    .max(5),
-  changes: z
-    .array(
-      z.object({
-        title: z.string(),
-        description: z
-          .string()
-          .describe(
-            "A description of the requested changes to the application"
-          ),
-      })
-    )
-    .min(1)
-    .max(5)
-    .describe("Requested changes"),
-  score: z.number().min(0).max(100),
 });

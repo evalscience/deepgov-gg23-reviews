@@ -22,34 +22,42 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ResearchDialog } from "./research-dialog";
+import { useApplicationById } from "@/hooks/useApplications";
+import { BackgroundImage } from "./background-image";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { useQueryState } from "nuqs";
 
 interface ApplicationDetailsProps {
-  hash: string;
+  id: string;
+  chainId: string;
+  roundId: string;
 }
 
-export function ApplicationDetails({ hash }: ApplicationDetailsProps) {
-  const { data: application = {} } = useQuery({
-    queryKey: ["application", hash],
-    queryFn: () => getApplication(hash),
+export function ApplicationDetails({
+  id,
+  chainId,
+  roundId,
+}: ApplicationDetailsProps) {
+  const [tab, setTab] = useQueryState("tab", { defaultValue: "project" });
+  const { data: application = {} } = useApplicationById({
+    id,
+    chainId,
   });
+  console.log(application);
 
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <Card className="w-full">
+    <Card className="w-full bg-white">
       <CardHeader>
         <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-xl">{application.name}</CardTitle>
+          <div className="flex-1">
+            <div className="flex justify-between  items-center gap-2">
+              <CardTitle className="text-xl">{application.name}</CardTitle>
+              <ResearchDialog applicationId={application.id} />
+            </div>
 
-            <div className="flex flex-wrap gap-3 mt-2">
-              {application.votes && (
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <ThumbsUp className="h-4 w-4 mr-1" />
-                  {application.votes.toLocaleString()} votes
-                </div>
-              )}
-
+            <div className="flex  gap-3 mt-2">
               {application.website && (
                 <a
                   href={application.website}
@@ -61,38 +69,64 @@ export function ApplicationDetails({ hash }: ApplicationDetailsProps) {
                   Website
                 </a>
               )}
-
-              <ResearchDialog applicationId={application.id} />
             </div>
           </div>
         </div>
+        <BackgroundImage className="h-64 w-full" src={application?.bannerImg} />
       </CardHeader>
 
       <CardContent>
-        <div className="mb-4">
-          <h3 className="font-medium mb-2">Abstract</h3>
-          <p className="text-lg leading-8 mb-8">{application.description}</p>
-          <p className="text-sm text-muted-foreground">
-            {expanded ? <Markdown>{application.content}</Markdown> : null}
-          </p>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mt-2 h-8 px-2"
-            onClick={() => setExpanded(!expanded)}
-          >
-            {expanded ? (
-              <span className="flex items-center">
-                Show Less <ChevronUp className="ml-1 h-4 w-4" />
-              </span>
-            ) : (
-              <span className="flex items-center">
-                Show More <ChevronDown className="ml-1 h-4 w-4" />
-              </span>
-            )}
-          </Button>
+        <div className="mb-4 rounded-lg">
+          <Tabs value={tab}>
+            <TabsList>
+              <TabsTrigger onClick={() => setTab("project")} value="project">
+                Project
+              </TabsTrigger>
+              <TabsTrigger
+                onClick={() => setTab("application")}
+                value="application"
+              >
+                Application
+              </TabsTrigger>
+              <TabsTrigger onClick={() => setTab("reviews")} value="reviews">
+                Reviews
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="project">
+              <Markdown>{application?.description}</Markdown>
+            </TabsContent>
+            <TabsContent value="application">
+              {application?.application?.answers?.length ? null : (
+                <div>No application found</div>
+              )}
+              <div className="space-y-8 ">
+                {application?.application?.answers.map((answer, i) => (
+                  <div key={i}>
+                    <div className="font-bold">{answer.question}</div>
+                    {answer.encryptedAnswer ? (
+                      <pre>&lt;hidden&gt;</pre>
+                    ) : typeof answer.answer === "string" ? (
+                      <Markdown className="">{answer.answer}</Markdown>
+                    ) : (
+                      <pre className="">
+                        {JSON.stringify(answer.answer, null, 2)}
+                      </pre>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+            <TabsContent value="reviews">
+              {application ? (
+                <AgentReviewTabs
+                  chainId={application.chainId}
+                  roundId={roundId}
+                  projectId={id}
+                />
+              ) : null}
+            </TabsContent>
+          </Tabs>
         </div>
-        <AgentReviewTabs applicationId={application.id} />
       </CardContent>
     </Card>
   );

@@ -1,50 +1,36 @@
 "use client";
 
 import { useState } from "react";
-import { ApplicationCard } from "@/components/application-card";
 import { Filter } from "@/components/filter";
-import { mockApplications } from "@/lib/mock-data";
-import { listApplications, listProjects } from "@/supabase/actions";
-import { useQuery } from "@tanstack/react-query";
-import { Project } from "next/dist/build/swc/types";
+import * as chains from "viem/chains";
 import { Application } from "@/supabase/types";
 import Link from "next/link";
+import { useApplications, useRounds } from "@/hooks/useApplications";
+import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { Markdown } from "./markdown";
+import { Avatar, AvatarImage } from "./ui/avatar";
+import { Badge } from "./ui/badge";
 
-export function Applications() {
-  const { data: applications = [] } = useQuery({
-    queryKey: ["applications"],
-    queryFn: () => listApplications(),
-  });
-
+export function Applications({
+  roundId,
+  chainId,
+}: {
+  roundId: string;
+  chainId: string;
+}) {
+  const { data: rounds } = useRounds();
+  const round = rounds?.find((round) => round.id === roundId);
+  const { data: applications } = useApplications({ roundId, chainId });
   const [filter, setFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("newest");
 
-  // Filter applications based on selected filter
-  // const filteredApplications = mockApplications.filter((app) => {
-  //   if (filter === "all") return true;
-  //   if (filter === "pending") return app.status === "pending";
-  //   if (filter === "approved") return app.status === "approved";
-  //   if (filter === "rejected") return app.status === "rejected";
-  //   return true;
-  // });
-
-  // // Sort applications based on selected sort option
-  // const sortedApplications = [...filteredApplications].sort((a, b) => {
-  //   if (sortBy === "newest")
-  //     return (
-  //       new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
-  //     );
-  //   if (sortBy === "oldest")
-  //     return (
-  //       new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime()
-  //     );
-  //   if (sortBy === "highest") return b.averageScore - a.averageScore;
-  //   if (sortBy === "lowest") return a.averageScore - b.averageScore;
-  //   return 0;
-  // });
   console.log(applications);
   return (
     <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">{round?.name}</h1>
+        <Markdown>{round?.description}</Markdown>
+      </div>
       {/* <Filter
         filter={filter}
         setFilter={setFilter}
@@ -52,22 +38,54 @@ export function Applications() {
         setSortBy={setSortBy}
       /> */}
 
-      <div className="grid grid-cols-1 gap-6">
-        {applications.map((application) => (
-          <ApplicationItem key={application.id} application={application} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {applications?.map((project) => (
+          <ApplicationItem
+            key={project.id}
+            project={project}
+            roundId={roundId}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function ApplicationItem({ application }: { application: Application }) {
+function ApplicationItem({
+  project,
+  roundId,
+}: {
+  project: Application;
+  roundId: string;
+}) {
   return (
-    <Link href={`/applications/${application.hash}`}>
-      <div className="p-4 border rounded-lg">
-        <h3 className="text-lg font-bold">{application.name}</h3>
-        <p className="text-sm line-clamp-3">{application.description}</p>
-      </div>
+    <Link href={`/${project.chainId}/${roundId}/${project.id}`}>
+      <Card className="bg-white">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2 truncate">
+              <Avatar>
+                <AvatarImage src={project.logoImg}></AvatarImage>
+              </Avatar>
+              <CardTitle className="text-base truncate">
+                {project.name}
+              </CardTitle>
+            </div>
+          </div>
+          <div>
+            <Badge variant="outline">{networkName(project.chainId)}</Badge>
+          </div>
+          <CardDescription className="line-clamp-3">
+            <>{project.description}</>
+          </CardDescription>
+        </CardHeader>
+      </Card>
     </Link>
   );
 }
+
+const networkName = (chainId: string) => {
+  return (
+    Object.values(chains).find((chain) => chain.id === chainId)?.name ?? chainId
+  );
+};

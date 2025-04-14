@@ -12,26 +12,35 @@ import { AlertCircle, CheckCircle2, LightbulbIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { listReviews } from "@/supabase/actions";
 import Image from "next/image";
+import { fetchReview } from "@/lib/review";
 
-export function AgentReviewTabs({ applicationId }: { applicationId: string }) {
+export function AgentReviewTabs({
+  chainId,
+  roundId,
+  projectId,
+}: {
+  chainId: string;
+  roundId: string;
+  projectId: string;
+}) {
   const {
     data: reviews,
-    isLoading,
+    isPending,
     error,
   } = useQuery({
-    queryKey: ["reviews", applicationId],
-    queryFn: () => listReviews(applicationId),
+    queryKey: ["reviews", { chainId, roundId, projectId }],
+    queryFn: () => fetchReview(chainId, roundId, projectId),
   });
 
+  console.log("reviews", reviews);
   const [activeTab, setActiveTab] = useState<string>("");
 
   // Set the first tab as active when data loads
-  if (reviews?.length && !activeTab) {
-    setActiveTab(reviews[0].reviewer);
-  }
-
-  if (isLoading) {
+  if (isPending) {
     return <LoadingState />;
+  }
+  if (reviews?.length && !activeTab) {
+    setActiveTab(reviews[0].name);
   }
 
   if (error || !reviews?.length) {
@@ -54,12 +63,9 @@ export function AgentReviewTabs({ applicationId }: { applicationId: string }) {
           {/* <div className="absolute bottom-0 w-full h-px bg-border" /> */}
           <TabsList>
             {reviews.map((review) => (
-              <TabsTrigger key={review.id} value={review.reviewer}>
+              <TabsTrigger key={review.name} value={review.name}>
                 <div className="flex flex-1 items-center gap-2">
-                  <span>{review.reviewer}</span>
-                  <Badge variant="outline" className="ml-1 text-xs">
-                    {review.score}/10
-                  </Badge>
+                  <span>{review.name}</span>
                 </div>
               </TabsTrigger>
             ))}
@@ -67,7 +73,7 @@ export function AgentReviewTabs({ applicationId }: { applicationId: string }) {
         </div>
 
         {reviews.map((review) => (
-          <TabsContent key={review.id} value={review.reviewer} className="pt-6">
+          <TabsContent key={review.name} value={review.name} className="pt-6">
             <ReviewContent review={review} />
           </TabsContent>
         ))}
@@ -77,53 +83,50 @@ export function AgentReviewTabs({ applicationId }: { applicationId: string }) {
 }
 
 function ReviewContent({ review }: { review: any }) {
-  const imageSrc = `https://raw.githubusercontent.com/evalscience/deepgov-gg23/refs/heads/main/agents/${review.reviewer}/visuals/profile.png`;
+  console.log("review", review);
+  const imageSrc = `https://raw.githubusercontent.com/evalscience/deepgov-gg23/refs/heads/main/agents/${review.name}/visuals/profile.png`;
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center gap-6">
         <div className="flex items-center gap-4">
           <Avatar className={`h-16 w-16 ${review.color} text-white`}>
             <AvatarFallback className="text-xl">
-              {review.reviewer.charAt(0).toUpperCase()}
+              {review.name.charAt(0).toUpperCase()}
             </AvatarFallback>
             <AvatarImage
               src={imageSrc}
-              alt={review.reviewer}
+              alt={review.name}
               width={100}
               height={100}
             />
           </Avatar>
           <div>
-            <h3 className="text-xl font-bold">{review.reviewer}</h3>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-base font-semibold">{review.score}/10</span>
-              <ScoreIndicator score={review.score} color={review.color} />
-            </div>
+            <h3 className="text-xl font-bold">{review.name}</h3>
           </div>
         </div>
       </div>
 
-      <p className="text-muted-foreground">{review.content.review}</p>
+      <p className="text-muted-foreground">{review.review.review}</p>
 
       {/* Strengths, Weaknesses, Recommendations */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <AnalysisCard
           title="Strengths"
-          items={review.content.strengths}
+          items={review.review.strengths}
           icon={<CheckCircle2 className="h-5 w-5 text-green-500" />}
           color="border-green-100 bg-green-50 dark:bg-green-950/20"
         />
 
         <AnalysisCard
           title="Weaknesses"
-          items={review.content.weaknesses}
+          items={review.review.weaknesses}
           icon={<AlertCircle className="h-5 w-5 text-red-500" />}
           color="border-red-100 bg-red-50 dark:bg-red-950/20"
         />
 
         <AnalysisCard
           title="Recommendations"
-          items={review.content.changes}
+          items={review.review.changes}
           icon={<LightbulbIcon className="h-5 w-5 text-amber-500" />}
           color="border-amber-100 bg-amber-50 dark:bg-amber-950/20"
         />

@@ -1,0 +1,228 @@
+import { createClient } from "@/lib/graphql";
+import { useQuery } from "@tanstack/react-query";
+import { gql } from "urql";
+
+const gitcoinAPI = `https://beta.indexer.gitcoin.co/v1/graphql`;
+
+const ROUNDS_QUERY = gql`
+  query Rounds($where: RoundsBoolExp!) {
+    rounds(where: $where) {
+      id
+      chainId
+      roundMetadata
+      applicationsAggregate(where: { status: { _eq: "APPROVED" } }) {
+        aggregate {
+          count
+        }
+      }
+    }
+  }
+`;
+const ROUNDS_APPLICATIONS_QUERY = gql`
+  query RoundsApplications($where: RoundsBoolExp!) {
+    rounds(where: $where) {
+      applications(where: { status: { _eq: "APPROVED" } }) {
+        projectId
+        metadata
+        status
+        chainId
+        project {
+          id
+          chainId
+          metadata
+        }
+      }
+    }
+  }
+`;
+const APPLICATIONS_QUERY = gql`
+  query Applications($where: ApplicationsBoolExp!) {
+    applications(limit: 200, where: $where) {
+      id
+      chainId
+      projectId
+      metadata
+      status
+      project {
+        metadata
+      }
+    }
+  }
+`;
+
+export function useApplicationById({
+  id,
+  chainId,
+}: {
+  id: string;
+  chainId: string;
+}) {
+  const client = createClient(gitcoinAPI);
+  return useQuery({
+    queryKey: ["applications", { id, chainId }],
+    queryFn: async () => {
+      return client
+        ?.query(APPLICATIONS_QUERY, {
+          where: {
+            projectId: { _eq: id },
+            chainId: { _eq: chainId },
+          },
+        })
+        .toPromise()
+        .then((r) => {
+          if (r.error) throw new Error(r.error.message);
+          console.log(r.data.applications[0]);
+          return mapProject(r.data.applications[0]);
+        });
+    },
+  });
+}
+
+export function useApplications({
+  roundId,
+  chainId,
+}: {
+  roundId: string;
+  chainId: string;
+}) {
+  const client = createClient(gitcoinAPI);
+
+  return useQuery({
+    queryKey: ["applications", { chainId, roundId }],
+    queryFn: async () => {
+      return client
+        ?.query(ROUNDS_APPLICATIONS_QUERY, {
+          where: {
+            id: { _eq: roundId },
+            chainId: { _eq: chainId },
+          },
+        })
+        .toPromise()
+        .then((r) => {
+          if (r.error) throw new Error(r.error.message);
+          return r.data.rounds?.[0].applications
+            .map(mapProject)
+            .filter(Boolean);
+        });
+    },
+  });
+}
+
+const rounds = [
+  {
+    roundId: "35",
+    chainId: "42220",
+  },
+  {
+    roundId: "867",
+    chainId: "42161",
+  },
+  {
+    roundId: "865",
+    chainId: "42161",
+  },
+  {
+    roundId: "863",
+    chainId: "42161",
+  },
+];
+export function useRounds() {
+  const client = createClient(gitcoinAPI);
+
+  return useQuery({
+    queryKey: ["rounds"],
+    queryFn: async () => {
+      return client
+        ?.query(ROUNDS_QUERY, {
+          where: {
+            _or: rounds.map((round) => ({
+              id: { _eq: round.roundId },
+              chainId: { _eq: round.chainId },
+            })),
+          },
+        })
+        .toPromise()
+        .then((r) => {
+          if (r.error) throw new Error(r.error.message);
+          return r.data.rounds.map((round) => ({
+            id: round.id,
+            name: round.roundMetadata.name,
+            chainId: round.chainId,
+            description: round.roundMetadata.eligibility.description,
+            applicationsCount: round.applicationsAggregate.aggregate.count,
+          }));
+        });
+    },
+  });
+}
+
+type Round = {
+  id: string;
+  name: string;
+  description: string;
+};
+type Project = {
+  id: string;
+  chainId: string;
+  name: string;
+  description: string;
+  logoImg: string;
+  bannerImg: string;
+  website: string;
+  application: {};
+};
+type RoundApplications = {
+  rounds: Record<string, Round>;
+  projects: Project[];
+};
+
+type GitcoinRound = {
+  id: string;
+  chainId: string;
+  roundMetadata: {
+    name: string;
+    description: string;
+  };
+  applications: GitcoinApplication[];
+};
+type GitcoinApplication = {
+  id: string;
+  chainId: string;
+  status: "APPROVED";
+  metadata: {
+    application: string;
+    project: {
+      id: string;
+      chainId: string;
+      metadata: {
+        title: string;
+        description: string;
+        logoImg: string;
+        bannerImg: string;
+        website: string;
+      };
+    };
+  };
+};
+
+function mapProject({
+  status,
+  metadata,
+  chainId,
+  ...rest
+}: GitcoinApplication): Project | null {
+  const project = metadata?.application?.project;
+  return {
+    id: project.id,
+    chainId,
+    name: project?.title,
+    description: project?.description,
+    logoImg: ipfsGateway(project?.logoImg),
+    bannerImg: ipfsGateway(project?.bannerImg),
+    website: project?.website,
+    application: metadata?.application,
+  };
+}
+
+const ipfsGateway = (hash: string) =>
+  `https://d16c97c2np8a2o.cloudfront.net/ipfs/${hash}`;
