@@ -6,12 +6,9 @@ import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, CheckCircle2, LightbulbIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { listReviews } from "@/supabase/actions";
-import Image from "next/image";
 import { fetchReview } from "@/lib/review";
 
 export function AgentReviewTabs({

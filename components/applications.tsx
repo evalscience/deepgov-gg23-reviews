@@ -1,15 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Filter } from "@/components/filter";
 import * as chains from "viem/chains";
-import { Application } from "@/supabase/types";
 import Link from "next/link";
 import { useApplications, useRounds } from "@/hooks/useApplications";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Markdown } from "./markdown";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
+import { Application } from "@/lib/types";
 
 export function Applications({
   roundId,

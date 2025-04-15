@@ -9,35 +9,35 @@ import {
 } from "@/components/ui/dialog";
 import { Markdown } from "./markdown";
 import { useQuery } from "@tanstack/react-query";
-import { listResearch } from "@/supabase/actions";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { fetchResearch } from "@/lib/research";
 
 interface ResearchItem {
   input: string;
   output: string;
 }
 
-interface ResearchContent {
-  [key: string]: ResearchItem[];
-}
-
-interface Research {
-  content: ResearchContent;
-}
+interface Research {}
 
 interface ResearchDialogProps {
+  chainId: string;
+  roundId: string;
   applicationId: string;
 }
 
-export function ResearchDialog({ applicationId }: ResearchDialogProps) {
-  const { data: research = [] } = useQuery<Research[]>({
+export function ResearchDialog({
+  chainId,
+  roundId,
+  applicationId,
+}: ResearchDialogProps) {
+  const { data: research = [] } = useQuery<Research>({
     queryKey: ["research", applicationId],
-    queryFn: () => listResearch(applicationId),
+    queryFn: () => fetchResearch(chainId, roundId, applicationId),
     enabled: !!applicationId,
   });
 
