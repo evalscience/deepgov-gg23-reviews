@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
 
     const ip = getIp(req);
     const userId = hashIp(ip);
+    const normalizedAction = action === "up" ? "up" : "down";
 
     const voterKey = `vote:${applicationId}:${modelSpecName}:voters`;
     const upvoteKey = `vote:${applicationId}:${modelSpecName}:upvotes`;
@@ -38,25 +39,41 @@ export async function POST(req: NextRequest) {
 
     const existingVote = await redis.hget<string>(voterKey, userId);
 
-    if (existingVote === action) {
-      // No change
-      return NextResponse.json({ message: `You already ${action}d.` });
-    }
-
     const pipeline = redis.multi();
 
+    if (existingVote === normalizedAction) {
+      // 👉 Remove vote if same button clicked again
+      if (normalizedAction === "up") pipeline.decr(upvoteKey);
+      if (normalizedAction === "down") pipeline.decr(downvoteKey);
+
+      pipeline.hdel(voterKey, userId);
+
+      await pipeline.exec();
+
+      const [upvotes, downvotes] = await redis.mget<number[]>(
+        upvoteKey,
+        downvoteKey
+      );
+
+      return NextResponse.json({
+        message: `Removed your ${normalizedAction}.`,
+        upvotes: upvotes ?? 0,
+        downvotes: downvotes ?? 0,
+      });
+    }
+
+    // 👉 If previously voted differently, reverse that first
     if (existingVote) {
-      // Reverse previous vote
       if (existingVote === "up") pipeline.decr(upvoteKey);
       if (existingVote === "down") pipeline.decr(downvoteKey);
     }
 
-    // Apply new vote
-    if (action === "up") pipeline.incr(upvoteKey);
-    if (action === "down") pipeline.incr(downvoteKey);
+    // 👉 Apply new vote
+    if (normalizedAction === "up") pipeline.incr(upvoteKey);
+    if (normalizedAction === "down") pipeline.incr(downvoteKey);
 
-    // Update user's vote record
-    pipeline.hset(voterKey, { [userId]: action });
+    // 👉 Update user's vote record
+    pipeline.hset(voterKey, { [userId]: normalizedAction });
 
     await pipeline.exec();
 
@@ -66,7 +83,7 @@ export async function POST(req: NextRequest) {
     );
 
     return NextResponse.json({
-      message: `Successfully ${action}d.`,
+      message: `Successfully ${normalizedAction}d.`,
       upvotes: upvotes ?? 0,
       downvotes: downvotes ?? 0,
     });
