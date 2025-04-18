@@ -10,6 +10,8 @@ import {
   Globe,
   ThumbsUp,
   FileText,
+  Github,
+  Twitter,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getApplication } from "@/supabase/actions";
@@ -26,6 +28,8 @@ import { useApplicationById } from "@/hooks/useApplications";
 import { BackgroundImage } from "./background-image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useQueryState } from "nuqs";
+import Link from "next/link";
+import { Badge } from "./ui/badge";
 
 interface ApplicationDetailsProps {
   id: string;
@@ -54,22 +58,14 @@ export function ApplicationDetails({
           <div className="flex-1">
             <div className="flex justify-between  items-center gap-2">
               <CardTitle className="text-xl">{application.name}</CardTitle>
-              <ResearchDialog applicationId={application.id} />
+              <ResearchDialog
+                chainId={chainId}
+                roundId={roundId}
+                applicationId={application.id}
+              />
             </div>
 
-            <div className="flex  gap-3 mt-2">
-              {application.website && (
-                <a
-                  href={application.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center text-sm text-primary hover:underline"
-                >
-                  <Globe className="h-4 w-4 mr-1" />
-                  Website
-                </a>
-              )}
-            </div>
+            <ProjectSocials {...application} />
           </div>
         </div>
         <BackgroundImage className="h-64 w-full" src={application?.bannerImg} />
@@ -129,5 +125,59 @@ export function ApplicationDetails({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function ProjectSocials({
+  github,
+  website,
+  twitter,
+}: {
+  github: string;
+  twitter: string;
+  website: string;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2 my-1">
+      {github && (
+        <Link
+          href={`https://github.com/${github}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:underline"
+        >
+          <Badge variant="outline" className="flex items-center gap-1">
+            <Github className="h-4 w-4" />
+            {github}
+          </Badge>
+        </Link>
+      )}
+      {twitter && (
+        <Link
+          href={`https://x.com/${twitter}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:underline"
+        >
+          <Badge variant="outline" className="flex items-center gap-1">
+            <Twitter className="h-4 w-4" />
+            {twitter}
+          </Badge>
+        </Link>
+      )}
+      {website && (
+        <Link
+          href={website}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:underline"
+        >
+          <Badge variant="outline" className="flex items-center gap-1">
+            <Globe className="h-4 w-4" />
+            Website
+          </Badge>
+        </Link>
+      )}
+    </div>
   );
 }

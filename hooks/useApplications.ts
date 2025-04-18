@@ -169,6 +169,8 @@ type Project = {
   logoImg: string;
   bannerImg: string;
   website: string;
+  github: string;
+  twitter: string;
   application: {};
 };
 type RoundApplications = {
@@ -220,6 +222,8 @@ function mapProject({
     logoImg: ipfsGateway(project?.logoImg),
     bannerImg: ipfsGateway(project?.bannerImg),
     website: project?.website,
+    github: project?.projectGithub,
+    twitter: project?.projectTwitter,
     application: metadata?.application,
   };
 }

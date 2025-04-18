@@ -4,11 +4,18 @@ import { useState } from "react";
 import * as chains from "viem/chains";
 import Link from "next/link";
 import { useApplications, useRounds } from "@/hooks/useApplications";
-import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { Markdown } from "./markdown";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Application } from "@/lib/types";
+import { Github, Globe, Twitter } from "lucide-react";
 
 export function Applications({
   roundId,
@@ -71,6 +78,7 @@ function ApplicationItem({
               </CardTitle>
             </div>
           </div>
+
           <div>
             <Badge variant="outline">{networkName(project.chainId)}</Badge>
           </div>
