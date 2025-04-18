@@ -116,7 +116,9 @@ function ReviewContent({ review }: { review: any }) {
         />
       </div>
 
-      <p className="leading-relaxed">{review.review.review}</p>
+      <p className="leading-relaxed whitespace-break-spaces">
+        {review.review.review}
+      </p>
 
       {/* Strengths, Weaknesses, Recommendations */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
