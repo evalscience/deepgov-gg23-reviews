@@ -6,9 +6,7 @@ import { Project, useApplications } from "@/hooks/useApplications";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
-import { Application } from "@/lib/types";
 import { Filter, useFilter } from "./filter";
-import { cn } from "@/lib/utils";
 import { Grid } from "./grid";
 
 export function Applications({
@@ -29,22 +27,6 @@ export function Applications({
     filter,
   });
 
-  // if (!isPending && !applications?.length) {
-  //   return (
-  //     <div className="space-y-6">
-  //       <Filter filter={filter} onChange={(filter) => setFilter(filter)} />
-  //       <div className="flex flex-col items-center justify-center py-12">
-  //         <div className="text-center space-y-2">
-  //           <h3 className="text-lg font-medium">No applications found</h3>
-  //           <p className="text-sm text-gray-500">
-  //             Try adjusting your filters or check back later
-  //           </p>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-  console.log(applications);
   return (
     <div className="space-y-6">
       <Filter filter={filter} onChange={(filter) => setFilter(filter)} />

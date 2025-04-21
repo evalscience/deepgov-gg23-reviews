@@ -25,14 +25,10 @@ export function ApplicationDetails({
   roundId,
 }: ApplicationDetailsProps) {
   const [tab, setTab] = useQueryState("tab", { defaultValue: "reviews" });
-  const { data: application = {} } = useApplicationById({
+  const { data: application = {}, error } = useApplicationById({
     id,
     chainId,
   });
-  console.log(application);
-
-  const [expanded, setExpanded] = useState(false);
-
   return (
     <Card className="w-full bg-white">
       <CardHeader>

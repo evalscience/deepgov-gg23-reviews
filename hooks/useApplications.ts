@@ -26,7 +26,10 @@ const ROUNDS_APPLICATIONS_QUERY = gql`
         metadata
         status
         chainId
+        roundId
         round {
+          id
+          chainId
           roundMetadata
         }
         project {
@@ -48,6 +51,10 @@ const APPLICATIONS_QUERY = gql`
       status
       project {
         metadata
+      }
+      round {
+        id
+        roundMetadata
       }
     }
   }
@@ -232,6 +239,7 @@ function mapProject({
   round,
 }: GitcoinApplication): Project | null {
   const project = metadata?.application?.project;
+
   return {
     id: project.id,
     chainId,
