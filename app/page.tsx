@@ -4,7 +4,7 @@ import { Rounds } from "@/components/rounds";
 export default function Home() {
   return (
     <Page title="Rounds">
-      <Rounds />
+      <Applications />
     </Page>
   );
 }

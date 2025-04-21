@@ -25,11 +25,11 @@ export default function RootLayout({
               </Link>
               <div className="flex gap-4">
                 <Link href="/" className="text-sm p-4">
-                  Rounds
+                  Applications
                 </Link>
               </div>
             </header>
-            <div className="flex-1">{children}</div>
+            <div className="flex-1 px-4">{children}</div>
           </main>
         </Providers>
       </body>

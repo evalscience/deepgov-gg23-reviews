@@ -9,40 +9,59 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "./ui/input";
+import { useDebounce } from "react-use";
+import { useState } from "react";
+import { useQueryStates, parseAsString } from "nuqs";
 
 interface FilterProps {
-  filter: string;
-  setFilter: (value: string) => void;
-  sortBy: string;
-  setSortBy: (value: string) => void;
+  filter?: Filter;
+  onChange: (value?: Filter) => void;
 }
 
-export function Filter({ filter, setFilter, sortBy, setSortBy }: FilterProps) {
+type Filter = {
+  search?: string;
+  sort?: string;
+};
+
+export function useFilter() {
+  return useQueryStates(
+    {
+      search: parseAsString.withDefault(""),
+    },
+    { history: "replace" }
+  );
+}
+
+export function Filter({ filter, onChange }: FilterProps) {
+  const [state, setState] = useState<Filter | undefined>(filter);
+  const [, cancel] = useDebounce(
+    () => {
+      console.log("debounce", state);
+      onChange(state);
+    },
+    500,
+    [state]
+  );
+
+  console.log(state);
+
   return (
-    <div>
+    <div className="">
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="space-y-2 flex-1">
-          <Label htmlFor="search">Search</Label>
-          <Input placeholder="Search projects..." />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="filter">Filter by Status</Label>
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger id="filter" className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Applications</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-            </SelectContent>
-          </Select>
+          <Input
+            placeholder="Search projects..."
+            onChange={(e) => setState({ search: e.target.value })}
+            value={state?.search}
+          />
         </div>
 
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label htmlFor="sort">Sort by</Label>
-          <Select value={sortBy} onValueChange={setSortBy}>
+          <Select
+            value={filter?.sort}
+            onValueChange={(sort) => setState({ sort })}
+          >
             <SelectTrigger id="sort" className="w-full sm:w-[180px]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
@@ -53,7 +72,7 @@ export function Filter({ filter, setFilter, sortBy, setSortBy }: FilterProps) {
               <SelectItem value="lowest">Lowest Score</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </div> */}
       </div>
     </div>
   );

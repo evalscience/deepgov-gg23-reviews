@@ -1,89 +1,99 @@
 "use client";
 
-import { useState } from "react";
 import * as chains from "viem/chains";
 import Link from "next/link";
-import { useApplications, useRounds } from "@/hooks/useApplications";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
-import { Markdown } from "./markdown";
+import { Project, useApplications } from "@/hooks/useApplications";
+import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Application } from "@/lib/types";
-import { Github, Globe, Twitter } from "lucide-react";
+import { Filter, useFilter } from "./filter";
+import { cn } from "@/lib/utils";
+import { Grid } from "./grid";
 
 export function Applications({
   roundId,
   chainId,
 }: {
-  roundId: string;
-  chainId: string;
+  roundId?: string;
+  chainId?: string;
 }) {
-  const { data: rounds } = useRounds();
-  const round = rounds?.find((round) => round.id === roundId);
-  const { data: applications } = useApplications({ roundId, chainId });
-  const [filter, setFilter] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<string>("newest");
+  const [filter, setFilter] = useFilter();
+  const {
+    data: applications,
+    isPending,
+    error,
+  } = useApplications({
+    roundId,
+    chainId,
+    filter,
+  });
 
+  // if (!isPending && !applications?.length) {
+  //   return (
+  //     <div className="space-y-6">
+  //       <Filter filter={filter} onChange={(filter) => setFilter(filter)} />
+  //       <div className="flex flex-col items-center justify-center py-12">
+  //         <div className="text-center space-y-2">
+  //           <h3 className="text-lg font-medium">No applications found</h3>
+  //           <p className="text-sm text-gray-500">
+  //             Try adjusting your filters or check back later
+  //           </p>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
   console.log(applications);
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{round?.name}</h1>
-        <Markdown>{round?.description}</Markdown>
-      </div>
-      {/* <Filter
-        filter={filter}
-        setFilter={setFilter}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-      /> */}
+      <Filter filter={filter} onChange={(filter) => setFilter(filter)} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {applications?.map((project) => (
-          <ApplicationItem
-            key={project.id}
-            project={project}
-            roundId={roundId}
-          />
-        ))}
-      </div>
+      <Grid
+        columns={[1, 1, 2, 3]}
+        data={applications}
+        error={error}
+        isPending={isPending}
+        renderItem={(project) => (
+          <ApplicationItem project={project} key={project.id} />
+        )}
+      />
     </div>
   );
 }
 
 function ApplicationItem({
   project,
-  roundId,
+  isLoading,
 }: {
-  project: Application;
-  roundId: string;
+  project: Project;
+  isLoading?: boolean;
 }) {
   return (
-    <Link href={`/${project.chainId}/${roundId}/${project.id}`}>
-      <Card className="bg-white">
+    <Link href={`/${project?.chainId}/${project?.round?.id}/${project?.id}`}>
+      <Card className={cn("bg-white", { ["animate-pulse"]: isLoading })}>
         <CardHeader>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2 truncate">
               <Avatar>
-                <AvatarImage src={project.logoImg}></AvatarImage>
+                <AvatarImage src={project?.logoImg}></AvatarImage>
               </Avatar>
-              <CardTitle className="text-base truncate">
-                {project.name}
-              </CardTitle>
+              <div>
+                <CardTitle className="text-base truncate">
+                  {project?.name}
+                </CardTitle>
+                <div className="text-sm text-gray-500">
+                  {project?.round?.name}
+                </div>
+              </div>
             </div>
           </div>
 
           <div>
-            <Badge variant="outline">{networkName(project.chainId)}</Badge>
+            <Badge variant="outline">{networkName(project?.chainId)}</Badge>
           </div>
           <CardDescription className="line-clamp-3">
-            <>{project.description}</>
+            <>{project?.description}</>
           </CardDescription>
         </CardHeader>
       </Card>
@@ -92,7 +102,8 @@ function ApplicationItem({
 }
 
 const networkName = (chainId: string) => {
-  return (
-    Object.values(chains).find((chain) => chain.id === chainId)?.name ?? chainId
+  const chain = Object.values(chains).find(
+    (chain) => chain.id === parseInt(chainId)
   );
+  return chain?.name ?? chainId;
 };

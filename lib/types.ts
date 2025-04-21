@@ -12,12 +12,3 @@ export interface Reviews {
   sustainability: Review;
   innovation: Review;
 }
-
-export interface Application {
-  id: string;
-  name: string;
-  description: string;
-  chainId: string;
-  logoImg: string;
-  bannerImg: string;
-}

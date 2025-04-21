@@ -19,13 +19,16 @@ const ROUNDS_QUERY = gql`
   }
 `;
 const ROUNDS_APPLICATIONS_QUERY = gql`
-  query RoundsApplications($where: RoundsBoolExp!) {
+  query RoundsApplications($where: RoundsBoolExp!, $project: ProjectsBoolExp) {
     rounds(where: $where) {
-      applications(where: { status: { _eq: "APPROVED" } }) {
+      applications(where: { status: { _eq: "APPROVED" }, project: $project }) {
         projectId
         metadata
         status
         chainId
+        round {
+          roundMetadata
+        }
         project {
           id
           chainId
@@ -71,7 +74,6 @@ export function useApplicationById({
         .toPromise()
         .then((r) => {
           if (r.error) throw new Error(r.error.message);
-          console.log(r.data.applications[0]);
           return mapProject(r.data.applications[0]);
         });
     },
@@ -81,28 +83,38 @@ export function useApplicationById({
 export function useApplications({
   roundId,
   chainId,
+  filter,
 }: {
-  roundId: string;
-  chainId: string;
+  roundId?: string;
+  chainId?: string;
+  filter?: {
+    search?: string;
+  };
 }) {
   const client = createClient(gitcoinAPI);
 
   return useQuery({
-    queryKey: ["applications", { chainId, roundId }],
+    queryKey: ["applications", { chainId, roundId, filter }],
     queryFn: async () => {
       return client
         ?.query(ROUNDS_APPLICATIONS_QUERY, {
           where: {
-            id: { _eq: roundId },
-            chainId: { _eq: chainId },
+            _or: rounds.map((round) => ({
+              id: { _eq: round.roundId },
+              chainId: { _eq: round.chainId },
+            })),
           },
+          project: filter?.search
+            ? {
+                name: { _ilike: `%${filter.search}%` },
+              }
+            : {},
         })
         .toPromise()
         .then((r) => {
+          const applications = r.data.rounds.flatMap((r) => r.applications);
           if (r.error) throw new Error(r.error.message);
-          return r.data.rounds?.[0].applications
-            .map(mapProject)
-            .filter(Boolean);
+          return applications.map(mapProject).filter(Boolean);
         });
     },
   });
@@ -161,7 +173,7 @@ type Round = {
   name: string;
   description: string;
 };
-type Project = {
+export type Project = {
   id: string;
   chainId: string;
   name: string;
@@ -172,6 +184,11 @@ type Project = {
   github: string;
   twitter: string;
   application: {};
+  round: {
+    id: string;
+    name: string;
+    description: string;
+  };
 };
 type RoundApplications = {
   rounds: Record<string, Round>;
@@ -191,6 +208,7 @@ type GitcoinApplication = {
   id: string;
   chainId: string;
   status: "APPROVED";
+  round: GitcoinRound;
   metadata: {
     application: string;
     project: {
@@ -211,7 +229,7 @@ function mapProject({
   status,
   metadata,
   chainId,
-  ...rest
+  round,
 }: GitcoinApplication): Project | null {
   const project = metadata?.application?.project;
   return {
@@ -225,6 +243,7 @@ function mapProject({
     github: project?.projectGithub,
     twitter: project?.projectTwitter,
     application: metadata?.application,
+    round: { id: round.id, ...round.roundMetadata },
   };
 }
 
