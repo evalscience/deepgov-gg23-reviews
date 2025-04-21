@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/app/providers";
 import Link from "next/link";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "AI Reviewer",
@@ -29,7 +29,9 @@ export default function RootLayout({
                 </Link>
               </div>
             </header>
-            <div className="flex-1 px-4">{children}</div>
+            <div className="flex-1 px-4">
+              <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+            </div>
           </main>
         </Providers>
       </body>
