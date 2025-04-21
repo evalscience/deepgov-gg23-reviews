@@ -24,7 +24,7 @@ export function ApplicationDetails({
   chainId,
   roundId,
 }: ApplicationDetailsProps) {
-  const [tab, setTab] = useQueryState("tab", { defaultValue: "project" });
+  const [tab, setTab] = useQueryState("tab", { defaultValue: "reviews" });
   const { data: application = {} } = useApplicationById({
     id,
     chainId,
