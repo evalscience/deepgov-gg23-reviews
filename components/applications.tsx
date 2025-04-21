@@ -55,7 +55,11 @@ export function Applications({
         error={error}
         isPending={isPending}
         renderItem={(project) => (
-          <ApplicationItem project={project} key={project.id} />
+          <ApplicationItem
+            isLoading={isPending}
+            project={project}
+            key={project.id}
+          />
         )}
       />
     </div>
@@ -69,9 +73,35 @@ function ApplicationItem({
   project: Project;
   isLoading?: boolean;
 }) {
+  if (isLoading) {
+    return (
+      <Card className="animate-pulse">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2 truncate">
+              <div className="w-10 h-10 rounded-full bg-gray-200" />
+              <div className="space-y-2">
+                <div className="h-4 w-32 bg-gray-200 rounded" />
+                <div className="h-3 w-24 bg-gray-200 rounded" />
+              </div>
+            </div>
+          </div>
+          <div className="mt-2">
+            <div className="h-5 w-20 bg-gray-200 rounded" />
+          </div>
+          <div className="mt-2 space-y-2">
+            <div className="h-3 w-full bg-gray-200 rounded" />
+            <div className="h-3 w-4/5 bg-gray-200 rounded" />
+            <div className="h-3 w-3/5 bg-gray-200 rounded" />
+          </div>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <Link href={`/${project?.chainId}/${project?.round?.id}/${project?.id}`}>
-      <Card className={cn("bg-white", { ["animate-pulse"]: isLoading })}>
+      <Card className="bg-white">
         <CardHeader>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2 truncate">
