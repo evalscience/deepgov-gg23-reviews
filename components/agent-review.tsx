@@ -107,6 +107,7 @@ function ReviewContent({ review }: { review: any }) {
           <div>
             <h3 className="text-xl font-bold">{review.name}</h3>
           </div>
+          <div>{review.review.score}</div>
         </div>
 
         <VoteButtons

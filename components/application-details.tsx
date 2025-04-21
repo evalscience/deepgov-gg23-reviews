@@ -2,28 +2,10 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { AgentReviewTabs } from "@/components/agent-review";
-import {
-  ChevronDown,
-  ChevronUp,
-  Globe,
-  ThumbsUp,
-  FileText,
-  Github,
-  Twitter,
-} from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { getApplication } from "@/supabase/actions";
+import { Globe, Github, Twitter } from "lucide-react";
 import { Markdown } from "./markdown";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { ResearchDialog } from "./research-dialog";
+import { Research } from "./research";
 import { useApplicationById } from "@/hooks/useApplications";
 import { BackgroundImage } from "./background-image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -58,11 +40,6 @@ export function ApplicationDetails({
           <div className="flex-1">
             <div className="flex justify-between  items-center gap-2">
               <CardTitle className="text-xl">{application.name}</CardTitle>
-              <ResearchDialog
-                chainId={chainId}
-                roundId={roundId}
-                applicationId={application.id}
-              />
             </div>
 
             <ProjectSocials {...application} />
@@ -86,6 +63,9 @@ export function ApplicationDetails({
               </TabsTrigger>
               <TabsTrigger onClick={() => setTab("reviews")} value="reviews">
                 Reviews
+              </TabsTrigger>{" "}
+              <TabsTrigger onClick={() => setTab("research")} value="research">
+                Research
               </TabsTrigger>
             </TabsList>
             <TabsContent value="project">
@@ -118,6 +98,15 @@ export function ApplicationDetails({
                   chainId={application.chainId}
                   roundId={roundId}
                   projectId={id}
+                />
+              ) : null}
+            </TabsContent>
+            <TabsContent value="research">
+              {application ? (
+                <Research
+                  chainId={application.chainId}
+                  roundId={roundId}
+                  applicationId={id}
                 />
               ) : null}
             </TabsContent>
