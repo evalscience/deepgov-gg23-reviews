@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "AI Reviewer",
+  title: "DeepGov Reviews",
   description: "...",
 };
 

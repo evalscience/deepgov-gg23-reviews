@@ -67,24 +67,32 @@ export function useApplicationById({
   id: string;
   chainId: string;
 }) {
-  const client = createClient(gitcoinAPI);
   return useQuery({
     queryKey: ["applications", { id, chainId }],
-    queryFn: async () => {
-      return client
-        ?.query(APPLICATIONS_QUERY, {
-          where: {
-            projectId: { _eq: id },
-            chainId: { _eq: chainId },
-          },
-        })
-        .toPromise()
-        .then((r) => {
-          if (r.error) throw new Error(r.error.message);
-          return mapProject(r.data.applications[0]);
-        });
-    },
+    queryFn: async () => fetchApplicationById({ id, chainId }),
   });
+}
+
+export function fetchApplicationById({
+  id,
+  chainId,
+}: {
+  id: string;
+  chainId: string;
+}) {
+  const client = createClient(gitcoinAPI);
+  return client
+    ?.query(APPLICATIONS_QUERY, {
+      where: {
+        projectId: { _eq: id },
+        chainId: { _eq: chainId },
+      },
+    })
+    .toPromise()
+    .then((r) => {
+      if (r.error) throw new Error(r.error.message);
+      return mapProject(r.data.applications[0]);
+    });
 }
 
 export function useApplications({
@@ -232,7 +240,7 @@ type GitcoinApplication = {
   };
 };
 
-function mapProject({
+export function mapProject({
   status,
   metadata,
   chainId,
