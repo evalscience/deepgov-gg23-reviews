@@ -6,7 +6,7 @@ import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "DeepGov Reviews",
-  description: "...",
+  description: "Community-Guided, AI-Powered Funding",
 };
 
 export default function RootLayout({
