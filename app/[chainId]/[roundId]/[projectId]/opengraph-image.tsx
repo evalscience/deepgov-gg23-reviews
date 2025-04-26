@@ -1,5 +1,4 @@
 import { ImageResponse } from "next/og";
-import { metadata } from "./layout";
 import { fontFamily, loadGoogleFont } from "../../../opengraph-image";
 import {
   fetchApplicationById,
@@ -8,7 +7,6 @@ import {
 
 export const runtime = "edge";
 
-export const alt = metadata.title;
 export const size = { width: 1200, height: 630 };
 
 export const contentType = "image/png";
