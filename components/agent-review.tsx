@@ -17,6 +17,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { fetchReview } from "@/lib/review";
 import { useVote, useVoteCount } from "@/hooks/use-vote";
+import { Markdown } from "./markdown";
 
 export function AgentReviewTabs({
   chainId,
@@ -116,9 +117,7 @@ function ReviewContent({ review }: { review: any }) {
         />
       </div>
 
-      <p className="leading-relaxed whitespace-break-spaces">
-        {review.review.review}
-      </p>
+      <Markdown>{review.review.review}</Markdown>
 
       {/* Strengths, Weaknesses, Recommendations */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

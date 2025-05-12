@@ -2,7 +2,8 @@ import { cn } from "@/lib/utils";
 import type { ComponentProps } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 const components = {
   a: ({ children, href, ...props }: ComponentProps<"a">) => {
     const isExternal = href?.startsWith("http");
@@ -26,7 +27,8 @@ export function Markdown({
   return (
     <div className={cn("prose max-w-full", className)}>
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex]}
         {...props}
         components={components}
       />
