@@ -18,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchReview } from "@/lib/review";
 import { useVote, useVoteCount } from "@/hooks/use-vote";
 import { Markdown } from "./markdown";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
 export function AgentReviewTabs({
   chainId,
@@ -116,7 +117,23 @@ function ReviewContent({ review }: { review: any }) {
           hasVoted={votes?.userVote === "upvote"}
         />
       </div>
+      <Alert>
+        <AlertTitle>Rating {review.review.rating ?? "-"} / 10</AlertTitle>
+        <AlertDescription>
+          <div>{review.review.summary}</div>
+        </AlertDescription>
+      </Alert>
 
+      <Alert>
+        <AlertTitle>
+          Confidence {review.review.confidence ?? "-"} / 5
+        </AlertTitle>
+        <AlertDescription>
+          <div>{review.review.confidenceReasoning}</div>
+        </AlertDescription>
+      </Alert>
+
+      <p className="text-lg leading-8">{review.review.summary}</p>
       <Markdown>{review.review.review}</Markdown>
 
       {/* Strengths, Weaknesses, Recommendations */}
