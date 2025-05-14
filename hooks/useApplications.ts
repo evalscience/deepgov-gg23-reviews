@@ -1,3 +1,4 @@
+import { rounds } from "@/config";
 import { createClient } from "@/lib/graphql";
 import { useQuery } from "@tanstack/react-query";
 import { gql } from "urql";
@@ -96,29 +97,32 @@ export function fetchApplicationById({
 }
 
 export function useApplications({
-  roundId,
-  chainId,
   filter,
 }: {
-  roundId?: string;
-  chainId?: string;
   filter?: {
     search?: string;
+    roundId?: string;
+    chainId?: string;
   };
 }) {
   const client = createClient(gitcoinAPI);
 
   return useQuery({
-    queryKey: ["applications", { chainId, roundId, filter }],
+    queryKey: ["applications", { filter }],
     queryFn: async () => {
       return client
         ?.query(ROUNDS_APPLICATIONS_QUERY, {
-          where: {
-            _or: rounds.map((round) => ({
-              id: { _eq: round.roundId },
-              chainId: { _eq: round.chainId },
-            })),
-          },
+          where: filter?.roundId
+            ? {
+                id: { _eq: filter.roundId },
+                chainId: { _eq: filter.chainId },
+              }
+            : {
+                _or: rounds.map((round) => ({
+                  id: { _eq: round.roundId },
+                  chainId: { _eq: round.chainId },
+                })),
+              },
           project: filter?.search
             ? {
                 name: { _ilike: `%${filter.search}%` },
@@ -129,34 +133,12 @@ export function useApplications({
         .then((r) => {
           const applications = r.data.rounds.flatMap((r) => r.applications);
           if (r.error) throw new Error(r.error.message);
-          return applications.map(mapProject).filter(Boolean);
+          return applications.map(mapProject).filter(Boolean) as Project[];
         });
     },
   });
 }
 
-const rounds = [
-  {
-    roundId: "35",
-    chainId: "42220",
-  },
-  {
-    roundId: "867",
-    chainId: "42161",
-  },
-  {
-    roundId: "865",
-    chainId: "42161",
-  },
-  {
-    roundId: "863",
-    chainId: "42161",
-  },
-  {
-    roundId: "31",
-    chainId: "42220",
-  },
-];
 export function useRounds() {
   const client = createClient(gitcoinAPI);
 
@@ -174,13 +156,12 @@ export function useRounds() {
         })
         .toPromise()
         .then((r) => {
+          console.log(r.data);
           if (r.error) throw new Error(r.error.message);
           return r.data.rounds.map((round) => ({
             id: round.id,
             name: round.roundMetadata.name,
             chainId: round.chainId,
-            description: round.roundMetadata.eligibility.description,
-            applicationsCount: round.applicationsAggregate.aggregate.count,
           }));
         });
     },

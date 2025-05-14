@@ -9,27 +9,18 @@ import { Badge } from "./ui/badge";
 import { Filter, useFilter } from "./filter";
 import { Grid } from "./grid";
 
-export function Applications({
-  roundId,
-  chainId,
-}: {
-  roundId?: string;
-  chainId?: string;
-}) {
+export function Applications() {
   const [filter, setFilter] = useFilter();
-  const {
-    data: applications,
-    isPending,
-    error,
-  } = useApplications({
-    roundId,
-    chainId,
-    filter,
-  });
-
+  const { data: applications, isPending, error } = useApplications({ filter });
   return (
     <div className="space-y-6">
-      <Filter filter={filter} onChange={(filter) => setFilter(filter)} />
+      <Filter
+        filter={filter}
+        onChange={(filter) => {
+          console.log("filter", filter);
+          setFilter(filter);
+        }}
+      />
 
       <Grid
         columns={[1, 1, 2, 3]}
@@ -40,7 +31,7 @@ export function Applications({
           <ApplicationItem
             isLoading={isPending}
             project={project}
-            key={project.id}
+            key={[project.id, project.chainId, project.round?.id].join("-")}
           />
         )}
       />

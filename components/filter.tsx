@@ -7,11 +7,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Input } from "./ui/input";
 import { useDebounce } from "react-use";
 import { useState } from "react";
 import { useQueryStates, parseAsString } from "nuqs";
+import { useRounds } from "@/hooks/useApplications";
 
 interface FilterProps {
   filter?: Filter;
@@ -21,12 +21,16 @@ interface FilterProps {
 type Filter = {
   search?: string;
   sort?: string;
+  roundId?: string;
+  chainId?: string;
 };
 
 export function useFilter() {
   return useQueryStates(
     {
       search: parseAsString.withDefault(""),
+      roundId: parseAsString.withDefault(""),
+      chainId: parseAsString.withDefault(""),
     },
     { history: "replace" }
   );
@@ -34,16 +38,14 @@ export function useFilter() {
 
 export function Filter({ filter, onChange }: FilterProps) {
   const [state, setState] = useState<Filter | undefined>(filter);
-  const [, cancel] = useDebounce(
+  const { data: rounds } = useRounds();
+  useDebounce(
     () => {
-      console.log("debounce", state);
       onChange(state);
     },
     500,
     [state]
   );
-
-  console.log(state);
 
   return (
     <div className="">
@@ -55,24 +57,30 @@ export function Filter({ filter, onChange }: FilterProps) {
             value={state?.search}
           />
         </div>
-
-        {/* <div className="space-y-2">
-          <Label htmlFor="sort">Sort by</Label>
+        <div className="space-y-2 ">
           <Select
-            value={filter?.sort}
-            onValueChange={(sort) => setState({ sort })}
+            value={[filter?.roundId, filter?.chainId].join("-")}
+            onValueChange={(round) => {
+              const [id, chainId] = round.split("-");
+              setState({ roundId: id, chainId });
+            }}
           >
-            <SelectTrigger id="sort" className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Sort by" />
+            <SelectTrigger id="sort" className="w-full sm:w-[280px]">
+              <SelectValue placeholder="Round" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="newest">Newest First</SelectItem>
-              <SelectItem value="oldest">Oldest First</SelectItem>
-              <SelectItem value="highest">Highest Score</SelectItem>
-              <SelectItem value="lowest">Lowest Score</SelectItem>
+              <SelectItem value="-">All Rounds</SelectItem>
+              {rounds?.map((round) => (
+                <SelectItem
+                  key={round.id}
+                  value={[round.id, round.chainId].join("-")}
+                >
+                  {round.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
-        </div> */}
+        </div>
       </div>
     </div>
   );
