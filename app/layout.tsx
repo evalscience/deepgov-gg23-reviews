@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "DeepGov Reviews",
+  title: "DeepReview",
   description: "Community-Guided, AI-Powered Funding",
 };
 
@@ -21,7 +21,7 @@ export default function RootLayout({
           <main className="bg-background mx-auto max-w-screen-xl mb-24">
             <header className="py-4 flex gap-4 items-center">
               <Link href="/" className="text-sm p-4 font-bold">
-                AI-Reviewer
+                DeepReview
               </Link>
               <div className="flex gap-4">
                 <Link href="/" className="text-sm p-4">

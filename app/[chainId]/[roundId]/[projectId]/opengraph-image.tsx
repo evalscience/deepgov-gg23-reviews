@@ -27,7 +27,7 @@ export default async function Image({
     return new ImageResponse(
       (
         <div tw="bg-[#B45309] w-full h-full flex flex-col justify-center items-center">
-          <div tw="text-[140px] font-bold text-white">DeepGov</div>
+          <div tw="text-[140px] font-bold text-white">DeepReview</div>
           <div tw="text-4xl text-white">Project Not Found</div>
         </div>
       ),
@@ -64,7 +64,7 @@ export default async function Image({
         </div>
 
         <div tw="flex items-center tracking-wider text-neutral-200 absolute top-0 left-0 bg-neutral-900 p-2">
-          <div tw="flex ml-2 text-2xl">DeepGov</div>
+          <div tw="flex ml-2 text-2xl">DeepReview</div>
         </div>
       </div>
     ),

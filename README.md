@@ -1,4 +1,4 @@
-# DeepGov GG23 Applications Reviews
+# DeepReview GG23
 
 ### Getting Started
 
