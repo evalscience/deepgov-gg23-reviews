@@ -1,11 +1,11 @@
 import { NextRequest } from "next/server";
-import { db } from "@/lib/db";
+import applicationsRaw from "../../../applications.json";
+const applications = applicationsRaw as any[];
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
-  let sql = "SELECT * FROM applications WHERE 1=1";
-  const params: any[] = [];
+  let result = applications;
 
   const roundId = searchParams.get("roundId");
   const chainId = searchParams.get("chainId");
@@ -13,26 +13,31 @@ export async function GET(req: NextRequest) {
   const id = searchParams.get("id");
 
   if (roundId) {
-    sql += " AND roundId = ?";
-    params.push(roundId);
+    result = result.filter((app: any) => app.roundId == roundId);
   }
   if (chainId) {
-    sql += " AND chainId = ?";
-    params.push(chainId);
+    result = result.filter((app: any) => app.chainId == chainId);
   }
   if (search) {
-    sql += " AND metadata LIKE ?";
-    params.push(`%${search}%`);
+    result = result.filter(
+      (app: any) =>
+        app.metadata &&
+        JSON.stringify(app.metadata)
+          .toLowerCase()
+          .includes(search.toLowerCase())
+    );
   }
   if (id) {
-    sql += " AND id = ?";
-    params.push(id);
+    result = result.filter((app: any) => app.id == id);
   }
-  const rows = db.prepare(sql).all(...params);
-  // Parse metadata JSON
-  const result = rows.map((row: any) => ({
+
+  // Parse metadata JSON if it's a string
+  result = result.map((row: any) => ({
     ...row,
-    metadata: JSON.parse(row.metadata),
+    metadata:
+      typeof row.metadata === "string"
+        ? JSON.parse(row.metadata)
+        : row.metadata,
   }));
 
   return Response.json(result);
