@@ -1,5 +1,5 @@
 import type { Metadata, ResolvingMetadata } from "next";
-import { fetchApplicationById } from "@/hooks/useApplications";
+import { fetchApplicationById } from "@/lib/applications";
 
 type Props = {
   params: { projectId: string; chainId: string; roundId: string };
@@ -13,6 +13,7 @@ export async function generateMetadata(
   const project = await fetchApplicationById({
     id: params.projectId,
     chainId: params.chainId,
+    roundId: params.roundId,
   });
 
   if (!project) {

@@ -28,6 +28,7 @@ export function ApplicationDetails({
   const { data: application = {}, error } = useApplicationById({
     id,
     chainId,
+    roundId,
   });
   return (
     <Card className="w-full bg-white">

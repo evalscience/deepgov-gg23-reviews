@@ -1,9 +1,6 @@
 import { ImageResponse } from "next/og";
 import { fontFamily, loadGoogleFont } from "../../../opengraph-image";
-import {
-  fetchApplicationById,
-  useApplicationById,
-} from "../../../../hooks/useApplications";
+import { fetchApplicationById } from "@/lib/applications";
 
 export const runtime = "edge";
 
@@ -14,13 +11,14 @@ export const contentType = "image/png";
 export default async function Image({
   params,
 }: {
-  params: { chainId: string; projectId: string };
+  params: { chainId: string; projectId: string; roundId: string };
 }) {
   const fontData = await loadGoogleFont(fontFamily);
 
   const project = await fetchApplicationById({
     id: params.projectId,
     chainId: params.chainId,
+    roundId: params.roundId,
   });
 
   if (!project) {
