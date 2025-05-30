@@ -118,22 +118,28 @@ function ReviewContent({ review }: { review: any }) {
         />
       </div>
       <Alert>
-        <AlertTitle>Rating {review.review.rating ?? "-"} / 10</AlertTitle>
+        <AlertTitle>Rating {review.review.rating ?? "-"} / 100</AlertTitle>
         <AlertDescription>
           <div>{review.review.summary}</div>
         </AlertDescription>
       </Alert>
 
-      <Alert>
+      {/* <Alert>
         <AlertTitle>
           Confidence {review.review.confidence ?? "-"} / 5
         </AlertTitle>
         <AlertDescription>
           <div>{review.review.confidenceReasoning}</div>
         </AlertDescription>
+      </Alert> */}
+
+      <Alert>
+        <AlertTitle>
+          Ethics Review: {review.review.flagged ? " 🚩 Flagged" : " ✅ Approved"}
+        </AlertTitle>
       </Alert>
 
-      <p className="text-lg leading-8">{review.review.summary}</p>
+      {/* <p className="text-lg leading-8">{review.review.summary}</p> */}
       <Markdown>{review.review.review}</Markdown>
 
       {/* Strengths, Weaknesses, Recommendations */}
