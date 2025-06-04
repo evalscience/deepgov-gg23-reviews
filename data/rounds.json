@@ -1,0 +1,67 @@
+[
+  {
+    "id": "35",
+    "chainId": "42220",
+    "roundMetadata": {
+      "name": "Climate Solutions Round",
+      "description": "Supporting projects that address climate change through innovative solutions"
+    },
+    "applicationsAggregate": {
+      "aggregate": {
+        "count": 15
+      }
+    }
+  },
+  {
+    "id": "867",
+    "chainId": "42161",
+    "roundMetadata": {
+      "name": "Open Source Software Round",
+      "description": "Funding open source software projects that benefit the ecosystem"
+    },
+    "applicationsAggregate": {
+      "aggregate": {
+        "count": 23
+      }
+    }
+  },
+  {
+    "id": "865",
+    "chainId": "42161",
+    "roundMetadata": {
+      "name": "DeFi Innovation Round",
+      "description": "Supporting decentralized finance innovations and protocols"
+    },
+    "applicationsAggregate": {
+      "aggregate": {
+        "count": 18
+      }
+    }
+  },
+  {
+    "id": "863",
+    "chainId": "42161",
+    "roundMetadata": {
+      "name": "Web3 Infrastructure Round",
+      "description": "Building the foundational infrastructure for Web3"
+    },
+    "applicationsAggregate": {
+      "aggregate": {
+        "count": 12
+      }
+    }
+  },
+  {
+    "id": "31",
+    "chainId": "42220",
+    "roundMetadata": {
+      "name": "Social Impact Round",
+      "description": "Projects creating positive social impact through technology"
+    },
+    "applicationsAggregate": {
+      "aggregate": {
+        "count": 20
+      }
+    }
+  }
+] 
