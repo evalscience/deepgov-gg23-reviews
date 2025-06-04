@@ -1,7 +1,11 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { rounds } from "@/config";
-import { fetchApplicationById, mapProject } from "@/lib/applications";
+import {
+  fetchApplicationById,
+  fetchRounds,
+  mapProject,
+} from "@/lib/applications";
 
 export function useApplicationById({
   id,
@@ -34,10 +38,12 @@ export function useApplications({
       if (filter?.roundId) params.append("roundId", filter.roundId);
       if (filter?.chainId) params.append("chainId", filter.chainId);
       if (filter?.search) params.append("search", filter.search);
-
+      const rounds = await fetchRounds();
       const res = await fetch(`/api/applications?${params.toString()}`);
       const rows = await res.json();
-      return rows.map(mapProject).filter(Boolean) as Project[];
+      return rows
+        .map((r) => mapProject(r, rounds))
+        .filter(Boolean) as Project[];
     },
   });
 }
@@ -45,13 +51,7 @@ export function useApplications({
 export function useRounds() {
   return useQuery({
     queryKey: ["rounds"],
-    queryFn: () => {
-      return rounds.map((round) => ({
-        id: round.roundId,
-        name: `Round ${round.roundId}`,
-        chainId: round.chainId,
-      }));
-    },
+    queryFn: () => fetchRounds(),
   });
 }
 

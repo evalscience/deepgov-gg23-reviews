@@ -1,3 +1,5 @@
+import { rounds } from "@/config";
+
 export async function fetchApplicationById({
   id,
   chainId,
@@ -8,11 +10,12 @@ export async function fetchApplicationById({
   roundId: string;
 }) {
   console.log({ id, chainId, roundId });
+  const rounds = await fetchRounds();
   const url = `https://raw.githubusercontent.com/evalscience/deepgov-gg23-advisors/refs/heads/main/applications/${chainId}/${roundId}/${id}/application.json`;
   console.log(url);
   return await fetch(url)
     .then((res) => res.json())
-    .then((p) => mapProject(p));
+    .then(async (p) => mapProject(p, rounds));
 }
 
 export type Project = {
@@ -29,7 +32,10 @@ export type Project = {
   round: { id: string; name: string };
 };
 
-export function mapProject(row: any): Project | null {
+export function mapProject(
+  row: any,
+  rounds: { id: string; name: string }[]
+): Project | null {
   const metadata = row.metadata;
   // Try to support both the old and new metadata shapes
   const project = metadata?.application?.project || metadata?.project;
@@ -45,9 +51,25 @@ export function mapProject(row: any): Project | null {
     github: project?.projectGithub || project?.github,
     twitter: project?.projectTwitter || project?.twitter,
     application: metadata?.application || metadata,
-    round: { id: row.roundId, name: `Round ${row.roundId}` },
+    round: rounds?.find((r) => r.id === row.roundId) ?? { id: "?", name: "?" },
   };
 }
 
 const ipfsGateway = (hash?: string) =>
   hash ? `https://d16c97c2np8a2o.cloudfront.net/ipfs/${hash}` : "";
+
+export async function fetchRounds() {
+  const roundURL = `https://raw.githubusercontent.com/evalscience/deepgov-gg23-advisors/refs/heads/main/rounds`;
+
+  return Promise.all(
+    rounds.map((round) =>
+      fetch(`${roundURL}/${round.chainId}/${round.roundId}/details.json`)
+        .then((r) => r.json())
+        .then((r) => ({
+          id: round.roundId,
+          name: r.roundMetadata.name,
+          chainId: round.chainId,
+        }))
+    )
+  );
+}

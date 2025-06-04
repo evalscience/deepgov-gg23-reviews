@@ -2,7 +2,7 @@
 
 import * as chains from "viem/chains";
 import Link from "next/link";
-import { Project, useApplications } from "@/hooks/useApplications";
+import { Project, useApplications, useRounds } from "@/hooks/useApplications";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
@@ -12,6 +12,9 @@ import { Grid } from "./grid";
 export function Applications() {
   const [filter, setFilter] = useFilter();
   const { data: applications, isPending, error } = useApplications({ filter });
+
+  console.log(applications);
+  const { data: rounds } = useRounds();
   return (
     <div className="space-y-6">
       <Filter
@@ -31,6 +34,7 @@ export function Applications() {
           <ApplicationItem
             isLoading={isPending}
             project={project}
+            // round={rounds?.find()}
             key={[project.id, project.chainId, project.round?.id].join("-")}
           />
         )}

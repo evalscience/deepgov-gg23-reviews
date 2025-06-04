@@ -39,6 +39,7 @@ export function useFilter() {
 export function Filter({ filter, onChange }: FilterProps) {
   const [state, setState] = useState<Filter | undefined>(filter);
   const { data: rounds } = useRounds();
+  console.log(rounds);
   useDebounce(
     () => {
       onChange(state);
